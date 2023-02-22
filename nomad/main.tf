@@ -11,6 +11,18 @@ terraform {
   }
 }
 
+variable "image_type" {
+  description = "Which image type?"
+  default     = "base"
+  validation {
+    condition = contains([
+      "base",
+      "node"
+    ], var.image_type)
+    error_message = "Invalid image type!"
+  }
+}
+
 locals {
   username = data.coder_workspace.me.owner
 }
@@ -89,7 +101,7 @@ resource "nomad_job" "app" {
         driver = "docker"
         
         config {
-          image = "ghcr.io/simse/coder-image:latest"
+          image = "ghcr.io/simse/coder-nomad/${var.image_type}:latest"
           volumes = [
             "/nomad/coder-workspaces/${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}:/home/${local.username}"
           ]
